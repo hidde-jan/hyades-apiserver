@@ -27,6 +27,7 @@ import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_D
 import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_READ;
 import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_UPDATE;
 import static org.dependencytrack.auth.Permissions.Constants.BOM_UPLOAD;
+import static org.dependencytrack.auth.Permissions.Constants.CSAF_MANAGEMENT;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT_CREATE;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT_DELETE;
@@ -105,6 +106,7 @@ public class PermissionsTest {
         Assert.assertEquals("TAG_MANAGEMENT", Permissions.TAG_MANAGEMENT.name());
         Assert.assertEquals("TAG_MANAGEMENT_DELETE", Permissions.TAG_MANAGEMENT_DELETE.name());
         Assert.assertEquals("VIEW_BADGES", Permissions.VIEW_BADGES.name());
+        Assert.assertEquals("CSAF_MANAGEMENT", Permissions.CSAF_MANAGEMENT.name());
     }
 
     @Test
@@ -148,5 +150,6 @@ public class PermissionsTest {
         Assert.assertEquals("TAG_MANAGEMENT", TAG_MANAGEMENT);
         Assert.assertEquals("TAG_MANAGEMENT_DELETE", TAG_MANAGEMENT_DELETE);
         Assert.assertEquals("VIEW_BADGES", VIEW_BADGES);
+        Assert.assertEquals("CSAF_MANAGEMENT", CSAF_MANAGEMENT);
     }
 }
