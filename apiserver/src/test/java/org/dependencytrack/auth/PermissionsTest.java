@@ -66,7 +66,7 @@ public class PermissionsTest {
 
     @Test
     public void testPermissionEnums() {
-        Assert.assertEquals(39, Permissions.values().length);
+        Assert.assertEquals(38, Permissions.values().length);
         Assert.assertEquals("BOM_UPLOAD", Permissions.BOM_UPLOAD.name());
         Assert.assertEquals("VIEW_PORTFOLIO", Permissions.VIEW_PORTFOLIO.name());
         Assert.assertEquals("PORTFOLIO_ACCESS_CONTROL_BYPASS", Permissions.PORTFOLIO_ACCESS_CONTROL_BYPASS.name());
@@ -106,7 +106,6 @@ public class PermissionsTest {
         Assert.assertEquals("TAG_MANAGEMENT", Permissions.TAG_MANAGEMENT.name());
         Assert.assertEquals("TAG_MANAGEMENT_DELETE", Permissions.TAG_MANAGEMENT_DELETE.name());
         Assert.assertEquals("VIEW_BADGES", Permissions.VIEW_BADGES.name());
-        Assert.assertEquals("CSAF_MANAGEMENT", Permissions.CSAF_MANAGEMENT.name());
     }
 
     @Test
@@ -150,6 +149,5 @@ public class PermissionsTest {
         Assert.assertEquals("TAG_MANAGEMENT", TAG_MANAGEMENT);
         Assert.assertEquals("TAG_MANAGEMENT_DELETE", TAG_MANAGEMENT_DELETE);
         Assert.assertEquals("VIEW_BADGES", VIEW_BADGES);
-        Assert.assertEquals("CSAF_MANAGEMENT", CSAF_MANAGEMENT);
     }
 }

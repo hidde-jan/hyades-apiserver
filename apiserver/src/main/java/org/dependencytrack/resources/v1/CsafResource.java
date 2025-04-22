@@ -46,7 +46,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.commons.codec.binary.Hex;
 import org.dependencytrack.auth.Permissions;
 import org.dependencytrack.event.CsafMirrorEvent;
 import org.dependencytrack.model.CsafDocumentEntity;
@@ -61,8 +60,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 
 /**
@@ -79,12 +76,12 @@ public class CsafResource extends AlpineResource {
 
     @POST
     @Path("/trigger-mirror/")
-    @Operation(summary = "Triggers the CSAF mirror task manually", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Triggers the CSAF mirror task manually", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The CSAF mirror task has been triggered"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE)
     public Response triggerMirror() {
         var mirror = new CsafMirrorTask();
         mirror.inform(new CsafMirrorEvent());
@@ -95,13 +92,13 @@ public class CsafResource extends AlpineResource {
     @GET
     @Path("/aggregators/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns a list of CSAF aggregators", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Returns a list of CSAF aggregators", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_READ</strong></p>")
     @PaginatedApi
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "A list of CSAF entities", headers = @Header(name = TOTAL_COUNT_HEADER, description = "The total number of CSAF entities", schema = @Schema(type = "integer")), content = @Content(array = @ArraySchema(schema = @Schema(implementation = CsafSourceEntity.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_READ)
     public Response getCsafAggregators(@QueryParam("searchText") String searchText, @QueryParam("pageSize") int pageSize, @QueryParam("pageNumber") int pageNumber) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             final PaginatedResult result = qm.getCsafSources(true, false);
@@ -113,13 +110,13 @@ public class CsafResource extends AlpineResource {
     @Path("/aggregators/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Creates a new CSAF aggregator", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Creates a new CSAF aggregator", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_CREATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The created CSAF aggregator", content = @Content(schema = @Schema(implementation = Repository.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "409", description = "An aggregator with the specified identifier already exists")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_CREATE)
     public Response createCsafAggregator(CsafSourceEntity jsonEntity) {
         try (QueryManager qm = new QueryManager()) {
             final CsafSourceEntity csafEntity = qm.createCsafSource(jsonEntity.getName(), jsonEntity.getUrl(),
@@ -134,13 +131,13 @@ public class CsafResource extends AlpineResource {
     @Path("/aggregators/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Updates a CSAF aggregator", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Updates a CSAF aggregator", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The updated CSAF aggregator", content = @Content(schema = @Schema(implementation = Repository.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The csafEntryId of the aggregator could not be found")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT) // TODO create update only permission
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE) // TODO create update only permission
     public Response updateCsafAggregator(CsafSourceEntity jsonEntity) {
         final Validator validator = super.getValidator();
         /*
@@ -174,13 +171,13 @@ public class CsafResource extends AlpineResource {
     @Path("/aggregators/{csafEntryId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Deletes a CSAF aggregator", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Deletes a CSAF aggregator", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_DELETE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "CSAF source removed successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The entry ID of the CSAF source could not be found")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT) // TODO OR delete only permission
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_DELETE)
     public Response deleteCsafEntity(
             @Parameter(description = "The csafEntryId of the CSAF source to delete", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("csafEntryId") String csafEntryId) {
         try (QueryManager qm = new QueryManager()) {
@@ -199,13 +196,13 @@ public class CsafResource extends AlpineResource {
     @GET
     @Path("/providers/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns a list of CSAF providers", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Returns a list of CSAF providers", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_READ</strong></p>")
     @PaginatedApi
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "A list of CSAF providers", headers = @Header(name = TOTAL_COUNT_HEADER, description = "The total number of CSAF entities", schema = @Schema(type = "integer")), content = @Content(array = @ArraySchema(schema = @Schema(implementation = CsafSourceEntity.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_READ)
     public Response getCsafProviders() {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             final PaginatedResult result = qm.getCsafSources(false, false);
@@ -217,13 +214,13 @@ public class CsafResource extends AlpineResource {
     @Path("/providers/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Creates a new CSAF provider", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Creates a new CSAF provider", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_CREATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The created CSAF provider", content = @Content(schema = @Schema(implementation = Repository.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "409", description = "An provider with the specified identifier already exists")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_CREATE)
     public Response createCsafProvider(CsafSourceEntity jsonEntity) {
         try (QueryManager qm = new QueryManager()) {
             final CsafSourceEntity csafEntity = qm.createCsafSource(jsonEntity.getName(), jsonEntity.getUrl(),
@@ -238,13 +235,13 @@ public class CsafResource extends AlpineResource {
     @Path("/providers/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Updates a CSAF provider", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Updates a CSAF provider", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The updated CSAF provider", content = @Content(schema = @Schema(implementation = Repository.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The csafEntityId of the provider could not be found")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT) // TODO create update only permission
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE)
     public Response updateCsafProvider(CsafSourceEntity jsonEntity) {
         try (QueryManager qm = new QueryManager()) {
             var csafEntity = qm.updateCsafSource(jsonEntity);
@@ -262,13 +259,13 @@ public class CsafResource extends AlpineResource {
     @GET
     @Path("/discoveries/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns a list of discovered CSAF sources", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Returns a list of discovered CSAF sources", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_READ</strong></p>")
     @PaginatedApi
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "A list of discovered CSAF sources", headers = @Header(name = TOTAL_COUNT_HEADER, description = "The total number of discovered CSAF sources", schema = @Schema(type = "integer")), content = @Content(array = @ArraySchema(schema = @Schema(implementation = CsafSourceEntity.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_READ)
     public Response getDiscoveredCsafSources() {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             var results = qm.getCsafSources(false, true);
@@ -280,13 +277,13 @@ public class CsafResource extends AlpineResource {
     @GET
     @Path("/documents/")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Returns a list of CSAF documents", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Returns a list of CSAF documents", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_READ</strong></p>")
     @PaginatedApi
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "A list of CSAF documents", content = @Content(array = @ArraySchema(schema = @Schema(implementation = CsafDocumentEntity.class)))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_READ)
     public Response getCsafDocuments(@QueryParam("searchText") String searchText, @QueryParam("pageSize") int pageSize, @QueryParam("pageNumber") int pageNumber, @QueryParam("sortName") String sortName, @QueryParam("sortOrder") String sortOrder) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             var results = qm.searchCsafDocuments(searchText, pageSize, pageNumber, sortName, sortOrder);
@@ -298,8 +295,8 @@ public class CsafResource extends AlpineResource {
     @Path("/documents/")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.TEXT_PLAIN)
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
-    @Operation(summary = "Upload a new CSAF document", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_CREATE)
+    @Operation(summary = "Upload a new CSAF document", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_CREATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The created CSAF document", content = @Content(schema = @Schema(implementation = Repository.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -348,13 +345,13 @@ public class CsafResource extends AlpineResource {
     @Path("/documents/seen/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Mark a CSAF document as seen", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Mark a CSAF document as seen", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "CSAF document marked seen successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The entry ID of the CSAF document could not be found")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_UPDATE)
     public Response toggleCsafDocumentSeen(
             @Parameter(description = "The id of the CSAF document to mark as seen", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("id") String id) {
 
@@ -375,13 +372,13 @@ public class CsafResource extends AlpineResource {
     @Path("/documents/{csafEntryId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Deletes a CSAF source", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Deletes a CSAF document", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "CSAF source removed successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The entry ID of the CSAF source could not be found")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT) // TODO OR delete only permission
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_UPDATE)
     public Response deleteCsafDocument(
             @Parameter(description = "The csafEntryId of the CSAF source to delete", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("csafEntryId") String csafEntryId) {
 
@@ -402,12 +399,12 @@ public class CsafResource extends AlpineResource {
     @Path("/documents/{csafEntryId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    @Operation(summary = "Returns the contents of a CSAF document", description = "<p>Requires permission <strong>CSAF_MANAGEMENT</strong></p>")
+    @Operation(summary = "Returns the contents of a CSAF document", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_READ</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The content of a document"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PermissionRequired(Permissions.Constants.CSAF_MANAGEMENT)
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_READ)
     public Response getCsafDocumentContents(@Parameter(description = "The csafEntryId of the CSAF document to view", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("csafEntryId") String csafEntryId) {
         try (QueryManager qm = new QueryManager()) {
             final var csafEntity = qm.getObjectById(CsafDocumentEntity.class, csafEntryId);
@@ -418,15 +415,6 @@ public class CsafResource extends AlpineResource {
                 return Response.ok(csafEntity.getContent()).build();
             }
         }
-    }
-
-    public static String computeDocumentId(String publisherNamespace, String trackingID) throws NoSuchAlgorithmException {
-        var digest = MessageDigest.getInstance("SHA-256");
-
-        return "CSAF-" + Hex.encodeHexString(
-                digest.digest(
-                        publisherNamespace.getBytes()
-                )).substring(0, 8) + "-" + trackingID;
     }
 
 }

@@ -38,8 +38,11 @@ public class CsafMirrorTask implements LoggableSubscriber {
     public void inform(final Event e) {
         if (e instanceof CsafMirrorEvent) {
             try (final QueryManager qm = new QueryManager()) {
-                final ConfigProperty enabled = qm.getConfigProperty(VULNERABILITY_SOURCE_CSAF_ENABLED.getGroupName(), VULNERABILITY_SOURCE_CSAF_ENABLED.getPropertyName());
-                final boolean isEnabled = enabled != null && Boolean.valueOf(enabled.getPropertyValue());
+                final ConfigProperty enabled = qm.getConfigProperty(
+                        VULNERABILITY_SOURCE_CSAF_ENABLED.getGroupName(),
+                        VULNERABILITY_SOURCE_CSAF_ENABLED.getPropertyName()
+                );
+                final boolean isEnabled = enabled != null && Boolean.parseBoolean(enabled.getPropertyValue());
                 if (!isEnabled) {
                     LOGGER.debug("CSAF SOURCES ARE DISABLED, DISCARDING CSAF MIRROR EVENT");
                     return;
