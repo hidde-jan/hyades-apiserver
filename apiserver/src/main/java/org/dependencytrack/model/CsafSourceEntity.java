@@ -77,6 +77,10 @@ public class CsafSourceEntity implements Serializable {
     private Instant lastFetched;
 
     @Persistent
+    @Column(name = "DOMAIN")
+    private boolean domain;
+
+    @Persistent
     @Column(name = "AGGREGATOR")
     private boolean aggregator;
 
@@ -165,6 +169,14 @@ public class CsafSourceEntity implements Serializable {
         this.discovery = discovery;
     }
 
+    public boolean isDomain() {
+        return domain;
+    }
+
+    public void setDomain(boolean domain) {
+        this.domain = domain;
+    }
+
     @Override
     public String toString() {
         return "CsafSourceEntity{" +
@@ -177,6 +189,7 @@ public class CsafSourceEntity implements Serializable {
                 ", lastFetched=" + lastFetched +
                 ", aggregator=" + aggregator +
                 ", discovery=" + discovery +
+                ", domain=" + domain +
                 '}';
     }
 }
