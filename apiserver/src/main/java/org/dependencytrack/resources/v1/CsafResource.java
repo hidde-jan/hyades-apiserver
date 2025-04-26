@@ -165,6 +165,7 @@ public class CsafResource extends AlpineResource {
         try (QueryManager qm = new QueryManager()) {
             // TODO Quickfix: the client will not send the aggregator flag, therefore apply it manually
             jsonEntity.setAggregator(true);
+            jsonEntity.setDomain(CsafUtil.validateDomain(jsonEntity.getUrl()));
             var csafEntity = qm.updateCsafSource(jsonEntity);
             if(csafEntity == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -262,6 +263,7 @@ public class CsafResource extends AlpineResource {
             return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
         }
         try (QueryManager qm = new QueryManager()) {
+            jsonEntity.setDomain(CsafUtil.validateDomain(jsonEntity.getUrl()));
             var csafEntity = qm.updateCsafSource(jsonEntity);
             if(csafEntity == null) {
                 return Response.status(Response.Status.NOT_FOUND)

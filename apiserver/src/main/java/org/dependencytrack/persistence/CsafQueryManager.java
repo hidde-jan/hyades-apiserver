@@ -24,6 +24,7 @@ import alpine.resources.AlpineRequest;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.dependencytrack.model.CsafDocumentEntity;
 import org.dependencytrack.model.CsafSourceEntity;
+import org.dependencytrack.util.CsafUtil;
 
 import javax.annotation.Nullable;
 import javax.jdo.JDOObjectNotFoundException;
@@ -98,6 +99,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
         }*/
         final CsafSourceEntity csaf = new CsafSourceEntity();
         csaf.setName(name);
+        csaf.setDomain(CsafUtil.validateDomain(url));
         csaf.setUrl(url);
         csaf.setEnabled(enabled);
         csaf.setAggregator(aggregator);
@@ -156,6 +158,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
         try {
             final CsafSourceEntity existing = getObjectById(CsafSourceEntity.class, source.getId());
             applyIfChanged(existing, source, CsafSourceEntity::getName, existing::setName);
+            applyIfChanged(existing, source, CsafSourceEntity::isDomain, existing::setDomain);
             applyIfChanged(existing, source, CsafSourceEntity::getUrl, existing::setUrl);
             applyIfChanged(existing, source, CsafSourceEntity::getContent, existing::setContent);
             applyIfChanged(existing, source, CsafSourceEntity::getLastFetched, existing::setLastFetched);
