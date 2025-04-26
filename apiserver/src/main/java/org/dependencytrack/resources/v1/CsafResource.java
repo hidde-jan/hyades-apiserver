@@ -46,6 +46,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.dependencytrack.auth.Permissions;
 import org.dependencytrack.event.CsafMirrorEvent;
 import org.dependencytrack.model.CsafDocumentEntity;
@@ -54,6 +55,7 @@ import org.dependencytrack.model.Repository;
 import org.dependencytrack.persistence.QueryManager;
 import org.dependencytrack.resources.v1.openapi.PaginatedApi;
 import org.dependencytrack.tasks.CsafMirrorTask;
+import org.dependencytrack.util.CsafUtil;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -113,11 +115,15 @@ public class CsafResource extends AlpineResource {
     @Operation(summary = "Creates a new CSAF aggregator", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_CREATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The created CSAF aggregator", content = @Content(schema = @Schema(implementation = Repository.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid domain or url"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "409", description = "An aggregator with the specified identifier already exists")
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_CREATE)
     public Response createCsafAggregator(CsafSourceEntity jsonEntity) {
+        if(!CsafUtil.validateUrlOrDomain(jsonEntity.getUrl())) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
+        }
         try (QueryManager qm = new QueryManager()) {
             final CsafSourceEntity csafEntity = qm.createCsafSource(jsonEntity.getName(), jsonEntity.getUrl(),
                     jsonEntity.isEnabled(), true);
@@ -134,6 +140,7 @@ public class CsafResource extends AlpineResource {
     @Operation(summary = "Updates a CSAF aggregator", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The updated CSAF aggregator", content = @Content(schema = @Schema(implementation = Repository.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid domain or url"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The csafEntryId of the aggregator could not be found")
     })
@@ -152,6 +159,9 @@ public class CsafResource extends AlpineResource {
          * jsonRepository.setAuthenticationRequired(false);
          * }
          */
+        if(!CsafUtil.validateUrlOrDomain(jsonEntity.getUrl())) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
+        }
         try (QueryManager qm = new QueryManager()) {
             // TODO Quickfix: the client will not send the aggregator flag, therefore apply it manually
             jsonEntity.setAggregator(true);
@@ -217,11 +227,15 @@ public class CsafResource extends AlpineResource {
     @Operation(summary = "Creates a new CSAF provider", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_CREATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "The created CSAF provider", content = @Content(schema = @Schema(implementation = Repository.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid domain or url"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "409", description = "An provider with the specified identifier already exists")
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_CREATE)
     public Response createCsafProvider(CsafSourceEntity jsonEntity) {
+        if(!CsafUtil.validateUrlOrDomain(jsonEntity.getUrl())) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
+        }
         try (QueryManager qm = new QueryManager()) {
             final CsafSourceEntity csafEntity = qm.createCsafSource(jsonEntity.getName(), jsonEntity.getUrl(),
                     jsonEntity.isEnabled(), false);
@@ -238,11 +252,15 @@ public class CsafResource extends AlpineResource {
     @Operation(summary = "Updates a CSAF provider", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "The updated CSAF provider", content = @Content(schema = @Schema(implementation = Repository.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid domain or url"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "The csafEntityId of the provider could not be found")
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE)
     public Response updateCsafProvider(CsafSourceEntity jsonEntity) {
+        if(!CsafUtil.validateUrlOrDomain(jsonEntity.getUrl())) {
+            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
+        }
         try (QueryManager qm = new QueryManager()) {
             var csafEntity = qm.updateCsafSource(jsonEntity);
             if(csafEntity == null) {
