@@ -21,6 +21,7 @@
         <lib.awaitility.version>4.3.0</lib.awaitility.version>
         <lib.cloud-sql-postgres-socket-factory.version>1.25.1</lib.cloud-sql-postgres-socket-factory.version>
         <lib.commons-compress.version>1.27.1</lib.commons-compress.version>
+        <lib.commons-validator.version>1.9.0</lib.commons-validator.version>
         <lib.cpe-parser.version>3.0.0</lib.cpe-parser.version>
         <lib.cvss-calculator.version>1.4.3</lib.cvss-calculator.version>
         <lib.owasp-rr-calculator.version>1.0.1</lib.owasp-rr-calculator.version>
@@ -336,6 +337,14 @@
             <artifactId>commons-compress</artifactId>
             <version>${lib.commons-compress.version}</version>
         </dependency>
+
+        <!-- Commons Validation -->
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${lib.commons-validator.version}</version>
+        </dependency>
+
         <!-- Resilience4J -->
         <dependency>
             <groupId>io.github.resilience4j</groupId>
