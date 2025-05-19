@@ -9,40 +9,40 @@
     <changeSet id="csaf-1" author="FhG">
         <createTable tableName="CSAFSOURCEENTITY">
             <column name="ID" autoIncrement="true" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="CSAFSOURCEENTITY_PK" />
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CSAFSOURCEENTITY_PK"/>
             </column>
-            <column name="NAME" type="VARCHAR(255)" />
-            <column name="URL" type="VARCHAR(255)" />
-            <column name="ENABLED" type="BOOLEAN" />
-            <column name="AGGREGATOR" type="BOOLEAN" />
-            <column name="DISCOVERY" type="BOOLEAN" />
-            <column name="SEEN" type="BOOLEAN" />
-            <column name="DOMAIN" type="BOOLEAN" />
-            <column name="LASTFETCHED" type="TIMESTAMP WITH TIME ZONE" />
-            <column name="CONTENT" type="TEXT" />
+            <column name="NAME" type="VARCHAR(255)"/>
+            <column name="URL" type="VARCHAR(255)"/>
+            <column name="ENABLED" type="BOOLEAN"/>
+            <column name="AGGREGATOR" type="BOOLEAN"/>
+            <column name="DISCOVERY" type="BOOLEAN"/>
+            <column name="SEEN" type="BOOLEAN"/>
+            <column name="DOMAIN" type="BOOLEAN"/>
+            <column name="LASTFETCHED" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="CONTENT" type="TEXT"/>
         </createTable>
 
         <createTable tableName="CSAFDOCUMENTENTITY">
             <column name="ID" autoIncrement="true" type="BIGINT">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="CSAFDOCUMENTENTITY_PK" />
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CSAFDOCUMENTENTITY_PK"/>
             </column>
             <column name="NAME" type="VARCHAR(2048)"><!-- highest encountered len so far: 1257 -->
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="URL" type="VARCHAR(1024)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
-            <column name="SEEN" type="BOOLEAN" />
-            <column name="LASTFETCHED" type="TIMESTAMP WITH TIME ZONE" />
-            <column name="CONTENT" type="TEXT" />
+            <column name="SEEN" type="BOOLEAN"/>
+            <column name="LASTFETCHED" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="CONTENT" type="TEXT"/>
             <column name="PUBLISHERNAMESPACE" type="VARCHAR(1024)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="TRACKINGID" type="VARCHAR(255)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="TRACKINGVERSION" type="VARCHAR(255)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </createTable>
     </changeSet>
@@ -50,7 +50,8 @@
         <sql>
             ALTER TABLE "CSAFDOCUMENTENTITY"
             ADD COLUMN searchvector tsvector
-            GENERATED ALWAYS AS (to_tsvector('english', coalesce("NAME", '') || ' ' || coalesce("URL", '') || ' ' || coalesce("CONTENT", ''))) STORED;
+            GENERATED ALWAYS AS (to_tsvector('english', coalesce("NAME", '') || ' ' || coalesce("URL", '') || ' ' ||
+            coalesce("CONTENT", ''))) STORED;
         </sql>
         <sql>
             CREATE INDEX searchvector_idx ON "CSAFDOCUMENTENTITY" USING GIN (searchvector);
@@ -63,5 +64,33 @@
         <createIndex indexName="VULNERABILITYALIAS_CSAF_ID_IDX" tableName="VULNERABILITYALIAS">
             <column name="CSAF_ID"/>
         </createIndex>
+    </changeSet>
+    <changeSet id="csaf-4" author="FhG">
+        <addColumn tableName="FINDINGATTRIBUTION">
+            <column name="MATCHING_PERCENTAGE" type="FLOAT"/>
+        </addColumn>
+        <createTable tableName="CSAFMAPPING">
+            <column name="ID" autoIncrement="true" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="CSAFMAPPING_PK"/>
+            </column>
+            <column name="CSAFDOCUMENT_ID" type="BIGINT"/>
+            <column name="VULNERABILITY_ID" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="csaf-5" author="FhG">
+        <addForeignKeyConstraint
+                baseTableName="CSAFMAPPING"
+                baseColumnNames="CSAFDOCUMENT_ID"
+                referencedTableName="CSAFDOCUMENTENTITY"
+                referencedColumnNames="ID"
+                constraintName="CSAFDOCUMENT_FK"/>
+    </changeSet>
+    <changeSet id="csaf-6" author="FhG">
+        <addForeignKeyConstraint
+                baseTableName="CSAFMAPPING"
+                baseColumnNames="VULNERABILITY_ID"
+                referencedTableName="VULNERABILITY"
+                referencedColumnNames="ID"
+                constraintName="VULNERABILITY_FK"/>
     </changeSet>
 </databaseChangeLog>
