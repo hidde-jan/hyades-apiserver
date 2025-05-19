@@ -67,6 +67,7 @@ public enum ConfigPropertyConstants {
     SCANNER_SNYK_CVSS_SOURCE("scanner", "snyk.cvss.source", "NVD", PropertyType.STRING, "Type of source to be prioritized for cvss calculation", ConfigPropertyAccessMode.READ_WRITE),
     SCANNER_SNYK_BASE_URL("scanner", "snyk.base.url", "https://api.snyk.io", PropertyType.URL, "Base Url pointing to the hostname and path for Snyk analysis", ConfigPropertyAccessMode.READ_WRITE),
     SCANNER_CSAF_ENABLED("scanner", "csaf.enabled", "false", PropertyType.BOOLEAN, "Flag to enable/disable CSAF Vulnerability Analysis", ConfigPropertyAccessMode.READ_WRITE),
+    SCANNER_CSAF_THRESHOLD("scanner", "csaf.threshold", "false", PropertyType.INTEGER, "Matching threshold for CSAF Vulnerability Analysis", ConfigPropertyAccessMode.READ_WRITE),
     VULNERABILITY_POLICY_FILE_LAST_MODIFIED_HASH("vulnerability-policy", "vulnerability.policy.file.last.modified.hash", null,  PropertyType.STRING, "Hash value or etag of the last fetched bundle if any", ConfigPropertyAccessMode.READ_ONLY),
     VULNERABILITY_SOURCE_NVD_ENABLED("vuln-source", "nvd.enabled", "true", PropertyType.BOOLEAN, "Flag to enable/disable National Vulnerability Database", ConfigPropertyAccessMode.READ_WRITE),
     VULNERABILITY_SOURCE_NVD_API_URL("vuln-source", "nvd.api.url", "https://services.nvd.nist.gov/rest/json/cves/2.0", PropertyType.URL, "REST API URL for the NVD's CVE API 2.0", ConfigPropertyAccessMode.READ_WRITE),
