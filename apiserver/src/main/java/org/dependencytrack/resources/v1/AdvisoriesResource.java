@@ -79,8 +79,58 @@ import static org.dependencytrack.resources.v1.FindingResource.MEDIA_TYPE_SARIF_
         @SecurityRequirement(name = "BearerAuth")
 })
 public class AdvisoriesResource extends AbstractApiResource {
-
     private static final Logger LOGGER = Logger.getLogger(AdvisoriesResource.class);
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON, MEDIA_TYPE_SARIF_JSON})
+    @Operation(
+            summary = "Returns a list of all advisories",
+            description = "<p>Requires permission <strong>VIEW_VULNERABILITY</strong></p>" // TODO discuss permission
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A list of all advisories for a specific project, or a SARIF file",
+                    headers = @Header(name = TOTAL_COUNT_HEADER, description = "The total number of advisories", schema = @Schema(format = "integer")),
+                    content = {
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = AdvisoryDao.AdvisoryRow.class)), mediaType = MediaType.APPLICATION_JSON),
+                            @Content(schema = @Schema(type = "string"), mediaType = MEDIA_TYPE_SARIF_JSON)
+                    }
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access to advisories prohibited",
+                    content = @Content(schema = @Schema(implementation = ProblemDetails.class), mediaType = ProblemDetails.MEDIA_TYPE_JSON)),
+    })
+    @PaginatedApi
+    @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
+    public Response getAllAdvisories() {
+        try (QueryManager qm = new QueryManager(getAlpineRequest())) {
+
+
+            List<AdvisoryDao.AdvisoriesPortfolioRow> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
+                    handle.attach(AdvisoryDao.class).getAllAdvisories());
+            final long totalCount = advisoryRows.size();
+
+//                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
+//                findings = mapComponentLatestVersion(findings);
+//                if (acceptHeader != null && acceptHeader.contains(MEDIA_TYPE_SARIF_JSON)) {
+//                    try {
+//                        return Response.ok(generateSARIF(findings), MEDIA_TYPE_SARIF_JSON)
+//                                .header("content-disposition", "attachment; filename=\"findings-" + uuid + ".sarif\"")
+//                                .build();
+//                    } catch (IOException ioException) {
+//                        LOGGER.error(ioException.getMessage(), ioException);
+//                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while generating SARIF file").build();
+//                    }
+//                }
+
+            return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
+
+        }
+    }
+
 
     @GET
     @Path("/project/{uuid}")
@@ -109,12 +159,12 @@ public class AdvisoriesResource extends AbstractApiResource {
     @PaginatedApi
     @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
     public Response getAdvisoriesByProject(@Parameter(description = "The UUID of the project", schema = @Schema(type = "string", format = "uuid"), required = true)
-                                         @PathParam("uuid") @ValidUuid String uuid,
-                                         @Parameter(description = "Optionally includes suppressed advisories")
-                                         @QueryParam("suppressed") boolean suppressed,
-                                         @Parameter(description = "Optionally limit advisories to specific sources of vulnerability intelligence")
-                                         @QueryParam("source") Vulnerability.Source source,
-                                         @HeaderParam("accept") String acceptHeader) {
+                                           @PathParam("uuid") @ValidUuid String uuid,
+                                           @Parameter(description = "Optionally includes suppressed advisories")
+                                           @QueryParam("suppressed") boolean suppressed,
+                                           @Parameter(description = "Optionally limit advisories to specific sources of vulnerability intelligence")
+                                           @QueryParam("source") Vulnerability.Source source,
+                                           @HeaderParam("accept") String acceptHeader) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             final Project project = qm.getObjectByUuid(Project.class, uuid);
             if (project != null) {
