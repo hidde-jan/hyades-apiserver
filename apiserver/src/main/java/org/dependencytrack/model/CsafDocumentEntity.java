@@ -82,6 +82,8 @@ public class CsafDocumentEntity implements Serializable {
     @Column(name = "LASTFETCHED")
     private Instant lastFetched;
 
+
+
     public CsafDocumentEntity() {
         // no args for jdo
     }

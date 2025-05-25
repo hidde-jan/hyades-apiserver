@@ -39,6 +39,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.cyclonedx.proto.v1_6.Advisory;
 import org.dependencytrack.auth.Permissions;
 import org.dependencytrack.event.PortfolioRepositoryMetaAnalysisEvent;
 import org.dependencytrack.event.PortfolioVulnerabilityAnalysisEvent;
@@ -128,6 +129,33 @@ public class AdvisoriesResource extends AbstractApiResource {
 
             return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
 
+        }
+    }
+
+    @GET
+    @Path("/{advisoryId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Returns the details of an Advisory", description = "<p>Requires permission <strong>VULNERABILITY_ANALYSIS_READ</strong></p>")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Details of given advisory"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_READ)
+    public Response getAdvisoryById(@Parameter(description = "The advisoryId of the CSAF document to view", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("advisoryId") String advisoryId) {
+        try (QueryManager qm = new QueryManager()) {
+            final var advisoryEntity = qm.getObjectById(CsafDocumentEntity.class, advisoryId);
+
+            List<AdvisoryDao.ProjectRow> affectedProjects = withJdbiHandle(getAlpineRequest(), handle ->
+                    handle.attach(AdvisoryDao.class).getProjectsByAdvisory(advisoryEntity.getId()));
+
+
+
+            if(advisoryEntity == null) {
+                return Response.status(Response.Status.NOT_FOUND).entity("The requested CSAF document could not be found.").build();
+            } else {
+                return Response.ok(new AdvisoryDao.AdvisoryResult(advisoryEntity, affectedProjects)).build();
+            }
         }
     }
 
