@@ -48,6 +48,7 @@ public interface AdvisoryDao {
     record ProjectRow(
             int id,
             String name,
+            String uuid,
             String desc,
             String version
     ) {
@@ -58,6 +59,7 @@ public interface AdvisoryDao {
             
             SELECT DISTINCT "PROJECT_ID" AS "id",
             "PROJECT"."NAME" AS "name",
+            "PROJECT"."UUID" AS "uuid",
             "PROJECT"."DESCRIPTION" AS "desc",
             "PROJECT"."VERSION" AS "version"
             --Latest,Classifier,Last BOM Import,BOM Format,Risk Score,Active,Policy Violations,Vulnerabilities
