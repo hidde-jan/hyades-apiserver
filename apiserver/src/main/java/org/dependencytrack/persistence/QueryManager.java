@@ -48,6 +48,7 @@ import org.dependencytrack.model.Analysis;
 import org.dependencytrack.model.AnalyzerIdentity;
 import org.dependencytrack.model.Bom;
 import org.dependencytrack.model.Classifier;
+import org.dependencytrack.model.CsafMapping;
 import org.dependencytrack.model.Component;
 import org.dependencytrack.model.ComponentIdentity;
 import org.dependencytrack.model.ComponentOccurrence;
@@ -96,6 +97,7 @@ import org.dependencytrack.persistence.jdbi.JdbiFactory;
 import org.dependencytrack.resources.v1.vo.DependencyGraphResponse;
 import org.dependencytrack.tasks.IntegrityMetaInitializerTask;
 
+import javax.annotation.Nullable;
 import javax.jdo.FetchPlan;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -1086,7 +1088,7 @@ public class QueryManager extends AlpineQueryManager {
         getCsafQueryManager().synchronizeAllCsafDocuments(list);
     }
 
-    public CsafDocumentEntity synchronizeCsafDocument(CsafDocumentEntity csaf){
+    public CsafDocumentEntity synchronizeCsafDocument(CsafDocumentEntity csaf) {
         return getCsafQueryManager().synchronizeCsafDocument(csaf);
     }
 
@@ -1096,6 +1098,14 @@ public class QueryManager extends AlpineQueryManager {
 
     public boolean toggleCsafDocumentSeen(CsafDocumentEntity csafDocument) {
         return getCsafQueryManager().toggleCsafDocumentSeen(csafDocument);
+    }
+
+    public @Nullable CsafDocumentEntity getCsafDocumentByPublisherNamespaceAndTrackingID(String publisherNamespace, String trackingID) {
+        return getCsafQueryManager().getCsafDocumentByPublisherNamespaceAndTrackingID(publisherNamespace, trackingID);
+    }
+
+    public CsafMapping createCsafMapping(Vulnerability synchronizedVulnerability, CsafDocumentEntity referenceDoc) {
+        return getCsafQueryManager().createCsafMapping(synchronizedVulnerability, referenceDoc);
     }
 
     public PaginatedResult getRepositories() {

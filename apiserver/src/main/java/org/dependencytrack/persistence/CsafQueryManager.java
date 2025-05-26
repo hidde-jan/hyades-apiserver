@@ -23,7 +23,9 @@ import alpine.persistence.PaginatedResult;
 import alpine.resources.AlpineRequest;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.dependencytrack.model.CsafDocumentEntity;
+import org.dependencytrack.model.CsafMapping;
 import org.dependencytrack.model.CsafSourceEntity;
+import org.dependencytrack.model.Vulnerability;
 import org.dependencytrack.util.CsafUtil;
 
 import javax.annotation.Nullable;
@@ -187,10 +189,18 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
      * @param trackingID         the tracking ID
      * @return the CSAF document entity (or null if it does not exist)
      */
+    @Override
     public @Nullable CsafDocumentEntity getCsafDocumentByPublisherNamespaceAndTrackingID(String publisherNamespace, String trackingID) {
         final Query<CsafDocumentEntity> query = pm.newQuery(CsafDocumentEntity.class, "publisherNamespace == :publisherNamespace && trackingID == :trackingID");
         query.setRange(0, 1);
         return singleResult(query.execute(publisherNamespace, trackingID));
+    }
+
+    @Override
+    public CsafMapping createCsafMapping(Vulnerability synchronizedVulnerability, CsafDocumentEntity referenceDoc) {
+        CsafMapping mapping = new CsafMapping(referenceDoc, synchronizedVulnerability);
+        LOGGER.info("creating CSAF mapping "+mapping);
+        return persist(mapping);
     }
 
     @Override

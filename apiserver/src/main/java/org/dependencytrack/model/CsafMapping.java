@@ -24,6 +24,11 @@ public class CsafMapping {
     public CsafMapping() {
     }
 
+    public CsafMapping(CsafDocumentEntity csafDocument, Vulnerability vulnerability) {
+        this.csafDocument = csafDocument;
+        this.vulnerability = vulnerability;
+    }
+
     public CsafMapping(Long id, CsafDocumentEntity csafDocument, Vulnerability vulnerability) {
         this.id = id;
         this.csafDocument = csafDocument;

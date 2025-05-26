@@ -24,10 +24,8 @@ import org.cyclonedx.proto.v1_6.ScoreMethod;
 import org.cyclonedx.proto.v1_6.Source;
 import org.cyclonedx.proto.v1_6.VulnerabilityRating;
 import org.cyclonedx.proto.v1_6.VulnerabilityReference;
-import org.dependencytrack.model.AnalyzerIdentity;
-import org.dependencytrack.model.Severity;
-import org.dependencytrack.model.Vulnerability;
-import org.dependencytrack.model.VulnerabilityAlias;
+import org.dependencytrack.event.kafka.processor.CsafMirrorProcessor;
+import org.dependencytrack.model.*;
 import org.dependencytrack.parser.common.resolver.CweResolver;
 import org.dependencytrack.persistence.QueryManager;
 import org.dependencytrack.proto.vulnanalysis.v1.Scanner;
@@ -205,6 +203,8 @@ public final class ModelConverterCdxToVuln {
 
         // EPSS is an additional enrichment that no scanner currently provides.
         // TODO: Add mapping of EPSS score and percentile when needed.
+
+
 
         return vuln;
     }
