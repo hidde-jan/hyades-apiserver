@@ -106,4 +106,34 @@ public interface AdvisoryDao {
     List<AdvisoriesPortfolioRow> getAllAdvisories();
 
 
+    record ProjectAdvisoryFinding(
+            String name,
+            float confidence,
+            String desc,
+            String group,
+            String version
+    ) {
+    }
+    @SqlQuery(/* language=InjectedFreeMarker */ """
+            <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
+            
+            SELECT "COMPONENT"."NAME" AS "name"
+               , "MATCHING_PERCENTAGE" AS "confidence"
+               , "DESCRIPTION" AS "desc"
+               , "GROUP" AS "group"
+               , "VERSION" AS "version"
+            FROM "FINDINGATTRIBUTION"
+            INNER JOIN "COMPONENT" ON "FINDINGATTRIBUTION"."COMPONENT_ID" = "COMPONENT"."ID"
+            INNER JOIN "CSAFMAPPING"
+              ON "FINDINGATTRIBUTION"."VULNERABILITY_ID" = "CSAFMAPPING"."VULNERABILITY_ID"
+            INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
+            WHERE "FINDINGATTRIBUTION"."PROJECT_ID" = :projectId
+            AND "CSAFDOCUMENT_ID" = :advisoryId
+
+             ${apiOffsetLimitClause!}
+            """)
+    @RegisterConstructorMapper(AdvisoryDao.ProjectAdvisoryFinding.class)
+    List<AdvisoryDao.ProjectAdvisoryFinding> getFindingsByProjectAdvisory(@Bind long projectId, @Bind long advisoryId);
+
+
 }

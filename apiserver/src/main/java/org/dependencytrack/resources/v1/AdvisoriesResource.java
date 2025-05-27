@@ -221,4 +221,63 @@ public class AdvisoriesResource extends AbstractApiResource {
             }
         }
     }
+
+    @GET
+    @Path("/project/{projectId}/advisory/{advisoryId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Operation(
+            summary = "Returns a list of findings associated to project x advisory",
+            description = "<p>Requires permission <strong>VIEW_VULNERABILITY</strong></p>"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "A list of all advisory findings for a specific project and advisory",
+                    content = {
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = AdvisoryDao.AdvisoryRow.class)), mediaType = MediaType.APPLICATION_JSON),
+                    }
+            ),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Access to the requested project is forbidden",
+                    content = @Content(schema = @Schema(implementation = ProblemDetails.class), mediaType = ProblemDetails.MEDIA_TYPE_JSON)),
+            @ApiResponse(responseCode = "404", description = "The project or advisory could not be found")
+    })
+    @PaginatedApi
+    @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
+    public Response getFindingsByProjectAdvisory(@Parameter(description = "The UUID of the project", schema = @Schema(type = "string", format = "uuid"), required = true)
+                                           @PathParam("projectId") long projectId,
+                                           @Parameter(description = "The advisoryId")
+                                           @QueryParam("advisoryId") long advisoryId,
+                                           @HeaderParam("accept") String acceptHeader) {
+        try (QueryManager qm = new QueryManager(getAlpineRequest())) {
+//            final Project project = qm.getObjectByUuid(Project.class, uuid);
+//            if (project != null) {
+//                requireAccess(qm, project);
+
+                List<AdvisoryDao.ProjectAdvisoryFinding> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
+                        handle.attach(AdvisoryDao.class).getFindingsByProjectAdvisory(projectId, advisoryId));
+                final long totalCount = advisoryRows.size();
+
+//                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
+//                findings = mapComponentLatestVersion(findings);
+//                if (acceptHeader != null && acceptHeader.contains(MEDIA_TYPE_SARIF_JSON)) {
+//                    try {
+//                        return Response.ok(generateSARIF(findings), MEDIA_TYPE_SARIF_JSON)
+//                                .header("content-disposition", "attachment; filename=\"findings-" + uuid + ".sarif\"")
+//                                .build();
+//                    } catch (IOException ioException) {
+//                        LOGGER.error(ioException.getMessage(), ioException);
+//                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while generating SARIF file").build();
+//                    }
+//                }
+
+                return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
+            }
+//        else {
+//                return Response.status(Response.Status.NOT_FOUND).entity("The project could not be found.").build();
+//            }
+//        }
+    }
 }
