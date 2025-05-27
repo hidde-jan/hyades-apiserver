@@ -41,6 +41,8 @@ public interface AdvisoryDao {
 
     record AdvisoryResult(
             CsafDocumentEntity entity,
+            long findingsTotal,
+            long findingsMarked,
             List<ProjectRow> affectedProjects
     ) {
     }
@@ -76,6 +78,38 @@ public interface AdvisoryDao {
     @RegisterConstructorMapper(AdvisoryDao.ProjectRow.class)
     List<ProjectRow> getProjectsByAdvisory(long advisoryId);
 
+
+    @SqlQuery(/* language=InjectedFreeMarker */ """
+            <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
+            
+            SELECT COUNT(DISTINCT "FINDINGATTRIBUTION"."COMPONENT_ID") AS "findingsWithAnalysis"
+            FROM "FINDINGATTRIBUTION"
+            INNER JOIN "CSAFMAPPING"
+            ON "FINDINGATTRIBUTION"."VULNERABILITY_ID" = "CSAFMAPPING"."VULNERABILITY_ID"
+            INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
+            INNER JOIN "ANALYSIS" ON
+            "FINDINGATTRIBUTION"."PROJECT_ID" = "ANALYSIS"."PROJECT_ID"
+            WHERE "CSAFDOCUMENT_ID" = :advisoryId
+            GROUP BY "CSAFDOCUMENT_ID"
+            
+             ${apiOffsetLimitClause!}
+            """)
+    long getAmountFindingsMarked(long advisoryId);
+
+    @SqlQuery(/* language=InjectedFreeMarker */ """
+            <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
+            
+            SELECT COUNT(DISTINCT "FINDINGATTRIBUTION"."COMPONENT_ID") AS "findingsWithAnalysis"
+            FROM "FINDINGATTRIBUTION"
+            INNER JOIN "CSAFMAPPING"
+            ON "FINDINGATTRIBUTION"."VULNERABILITY_ID" = "CSAFMAPPING"."VULNERABILITY_ID"
+            INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
+            WHERE "CSAFDOCUMENT_ID" = :advisoryId
+            GROUP BY "CSAFDOCUMENT_ID"
+            
+             ${apiOffsetLimitClause!}
+            """)
+    long getAmountFindingsTotal(long advisoryId);
 
     record AdvisoriesPortfolioRow(
             String name,
@@ -115,6 +149,7 @@ public interface AdvisoryDao {
             String componentUuid
     ) {
     }
+
     @SqlQuery(/* language=InjectedFreeMarker */ """
             <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
             
@@ -131,7 +166,7 @@ public interface AdvisoryDao {
             INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
             WHERE "FINDINGATTRIBUTION"."PROJECT_ID" = :projectId
             AND "CSAFDOCUMENT_ID" = :advisoryId
-
+            
              ${apiOffsetLimitClause!}
             """)
     @RegisterConstructorMapper(AdvisoryDao.ProjectAdvisoryFinding.class)
