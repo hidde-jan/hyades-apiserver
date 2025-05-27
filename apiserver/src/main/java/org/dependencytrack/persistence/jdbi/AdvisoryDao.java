@@ -111,7 +111,8 @@ public interface AdvisoryDao {
             float confidence,
             String desc,
             String group,
-            String version
+            String version,
+            String componentUuid
     ) {
     }
     @SqlQuery(/* language=InjectedFreeMarker */ """
@@ -122,6 +123,7 @@ public interface AdvisoryDao {
                , "DESCRIPTION" AS "desc"
                , "GROUP" AS "group"
                , "VERSION" AS "version"
+               , "COMPONENT"."UUID" AS "componentUuid"
             FROM "FINDINGATTRIBUTION"
             INNER JOIN "COMPONENT" ON "FINDINGATTRIBUTION"."COMPONENT_ID" = "COMPONENT"."ID"
             INNER JOIN "CSAFMAPPING"
