@@ -234,7 +234,7 @@ public class AdvisoriesResource extends AbstractApiResource {
                     responseCode = "200",
                     description = "A list of all advisory findings for a specific project and advisory",
                     content = {
-                            @Content(array = @ArraySchema(schema = @Schema(implementation = AdvisoryDao.AdvisoryRow.class)), mediaType = MediaType.APPLICATION_JSON),
+                            @Content(array = @ArraySchema(schema = @Schema(implementation = AdvisoryDao.ProjectAdvisoryFinding.class)), mediaType = MediaType.APPLICATION_JSON),
                     }
             ),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
@@ -246,32 +246,21 @@ public class AdvisoriesResource extends AbstractApiResource {
     })
     @PaginatedApi
     @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
-    public Response getFindingsByProjectAdvisory(@Parameter(description = "The UUID of the project", schema = @Schema(type = "string", format = "uuid"), required = true)
+    public Response getFindingsByProjectAdvisory(@Parameter(description = "The ID of the project", schema = @Schema(type = "string"), required = true)
                                            @PathParam("projectId") long projectId,
-                                           @Parameter(description = "The advisoryId")
-                                           @QueryParam("advisoryId") long advisoryId,
+                                           @Parameter(description = "The advisoryId", schema = @Schema(type="string"), required = true)
+                                           @PathParam("advisoryId") long advisoryId,
                                            @HeaderParam("accept") String acceptHeader) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
 //            final Project project = qm.getObjectByUuid(Project.class, uuid);
 //            if (project != null) {
 //                requireAccess(qm, project);
 
+            LOGGER.info("Querying for "+projectId+" :: "+advisoryId);
                 List<AdvisoryDao.ProjectAdvisoryFinding> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
                         handle.attach(AdvisoryDao.class).getFindingsByProjectAdvisory(projectId, advisoryId));
                 final long totalCount = advisoryRows.size();
-
-//                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
-//                findings = mapComponentLatestVersion(findings);
-//                if (acceptHeader != null && acceptHeader.contains(MEDIA_TYPE_SARIF_JSON)) {
-//                    try {
-//                        return Response.ok(generateSARIF(findings), MEDIA_TYPE_SARIF_JSON)
-//                                .header("content-disposition", "attachment; filename=\"findings-" + uuid + ".sarif\"")
-//                                .build();
-//                    } catch (IOException ioException) {
-//                        LOGGER.error(ioException.getMessage(), ioException);
-//                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while generating SARIF file").build();
-//                    }
-//                }
+                LOGGER.info("retrieved size "+totalCount);
 
                 return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
             }
