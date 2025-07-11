@@ -27,7 +27,6 @@ import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_D
 import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_READ;
 import static org.dependencytrack.auth.Permissions.Constants.ACCESS_MANAGEMENT_UPDATE;
 import static org.dependencytrack.auth.Permissions.Constants.BOM_UPLOAD;
-import static org.dependencytrack.auth.Permissions.Constants.CSAF_MANAGEMENT;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT_CREATE;
 import static org.dependencytrack.auth.Permissions.Constants.POLICY_MANAGEMENT_DELETE;
