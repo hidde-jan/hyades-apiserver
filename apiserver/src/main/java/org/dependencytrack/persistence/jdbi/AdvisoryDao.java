@@ -122,17 +122,16 @@ public interface AdvisoryDao {
 
     @SqlQuery(/* language=InjectedFreeMarker */ """
             <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
-            
-            SELECT "NAME" AS "name"
-                     , COUNT("PROJECT_ID") AS "affectedComponents"
-                     , COUNT(DISTINCT "PROJECT_ID") AS "affectedProjects"
-                     , "URL" AS "url"
-                     , "CSAFDOCUMENT_ID" AS "documentId"
-            FROM "FINDINGATTRIBUTION"
-            INNER JOIN "CSAFMAPPING"
-            ON "FINDINGATTRIBUTION"."VULNERABILITY_ID" = "CSAFMAPPING"."VULNERABILITY_ID"
-            INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
-            GROUP BY "CSAFDOCUMENT_ID","NAME","URL"
+
+            SELECT "CSAFDOCUMENTENTITY"."NAME" as "name",
+            COUNT("PROJECT_ID") AS "affectedComponents",
+            COUNT(DISTINCT "PROJECT_ID") AS "affectedProjects",
+            "URL" AS "url",
+            "CSAFDOCUMENTENTITY"."ID" AS "documentId"
+            FROM "CSAFDOCUMENTENTITY"
+            LEFT JOIN "CSAFMAPPING" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
+            LEFT JOIN "FINDINGATTRIBUTION" ON "FINDINGATTRIBUTION"."VULNERABILITY_ID" = "CSAFMAPPING"."VULNERABILITY_ID"
+            GROUP BY "CSAFDOCUMENTENTITY"."ID","CSAFDOCUMENTENTITY"."NAME","URL"
             
              ${apiOffsetLimitClause!}
             """)
