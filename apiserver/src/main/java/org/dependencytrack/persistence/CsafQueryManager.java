@@ -218,7 +218,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
         long total = totalQueryResult.getFirst();
 
         // Construct query
-        StringBuilder docSql = new StringBuilder("SELECT \"ID\",\"NAME\",\"URL\",\"SEEN\",\"LASTFETCHED\",\"PUBLISHERNAMESPACE\",\"TRACKINGID\",\"TRACKINGVERSION\" FROM public.\"CSAFDOCUMENTENTITY\" ");
+        StringBuilder docSql = new StringBuilder("SELECT \"ID\",\"NAME\",\"URL\",\"SEEN\",\"MANUALLYADDED\",\"LASTFETCHED\",\"PUBLISHERNAMESPACE\",\"TRACKINGID\",\"TRACKINGVERSION\" FROM public.\"CSAFDOCUMENTENTITY\" ");
         ArrayList<Object> docParams = new ArrayList<>();
         if (!searchText.isBlank()) {
             docSql.append("WHERE searchvector @@ websearch_to_tsquery(?) ");

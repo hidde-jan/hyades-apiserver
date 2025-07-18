@@ -350,6 +350,7 @@ public class CsafResource extends AlpineResource {
             csaf.setTrackingID(trackingID);
             csaf.setTrackingVersion(trackingVersion);
             csaf.setSeen(true);
+            csaf.setManuallyAdded(true);
 
             // Sync the document into the database, replacing an older version with the same combination
             // of tracking ID and publisher namespace if necessary

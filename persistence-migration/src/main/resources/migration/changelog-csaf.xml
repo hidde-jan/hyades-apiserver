@@ -33,6 +33,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="SEEN" type="BOOLEAN"/>
+            <column name="MANUALLYADDED" type="BOOLEAN"/>
             <column name="LASTFETCHED" type="TIMESTAMP WITH TIME ZONE"/>
             <column name="CONTENT" type="TEXT"/>
             <column name="PUBLISHERNAMESPACE" type="VARCHAR(1024)">
