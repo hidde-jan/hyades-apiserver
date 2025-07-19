@@ -36,7 +36,6 @@ import java.util.List;
 public class CsafMirrorProcessor implements BatchProcessor<String, CsafDocumentItem> {
 
     public static final String PROCESSOR_NAME = "csaf.mirror";
-    public static final String TITLE_PROPERTY_NAME = "dependency-track:vuln:title";
     public static final String PUBLISHERNAMESPACE_PROPERTY_NAME = "dependency-track:vuln:csaf:publisher";
     public static final String TRACKINGID_PROPERTY_NAME = "dependency-track:vuln:csaf:trackingId";
     private static final Logger LOGGER = Logger.getLogger(CsafMirrorProcessor.class);
