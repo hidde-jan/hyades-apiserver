@@ -80,7 +80,7 @@ public class CsafDocumentEntity implements Serializable {
 
     @Persistent
     @Column(name = "MANUALLYADDED")
-    private Boolean manuallyAdded;
+    private boolean manuallyAdded;
 
     @Persistent
     @Column(name = "LASTFETCHED")
