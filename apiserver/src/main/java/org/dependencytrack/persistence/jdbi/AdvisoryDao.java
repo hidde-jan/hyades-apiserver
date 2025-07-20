@@ -19,6 +19,13 @@ public interface AdvisoryDao {
     ) {
     }
 
+    record VulnerabilityRow(
+            String id,
+            String source,
+            String vulnId
+    ) {
+    }
+
     @SqlQuery(/* language=InjectedFreeMarker */ """
             <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
             
@@ -41,9 +48,8 @@ public interface AdvisoryDao {
 
     record AdvisoryResult(
             CsafDocumentEntity entity,
-            long findingsTotal,
-            long findingsMarked,
-            List<ProjectRow> affectedProjects
+            List<ProjectRow> affectedProjects,
+            List<AdvisoryDao.VulnerabilityRow> vulnerabilities
     ) {
     }
 
@@ -78,6 +84,22 @@ public interface AdvisoryDao {
     @RegisterConstructorMapper(AdvisoryDao.ProjectRow.class)
     List<ProjectRow> getProjectsByAdvisory(long advisoryId);
 
+    @SqlQuery(/* language=InjectedFreeMarker */ """
+            <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
+            
+            SELECT DISTINCT "VULNERABILITY"."ID" AS "id",
+            "SOURCE" AS "source",
+            "VULNID" AS "vulnId"
+            
+            FROM "CSAFMAPPING"
+            INNER JOIN "CSAFDOCUMENTENTITY" ON "CSAFMAPPING"."CSAFDOCUMENT_ID" = "CSAFDOCUMENTENTITY"."ID"
+            INNER JOIN "VULNERABILITY" ON "CSAFMAPPING"."VULNERABILITY_ID" = "VULNERABILITY"."ID"
+            WHERE "CSAFDOCUMENT_ID" = :advisoryId
+            
+             ${apiOffsetLimitClause!}
+            """)
+    @RegisterConstructorMapper(AdvisoryDao.VulnerabilityRow.class)
+    List<VulnerabilityRow> getVulnerabilitiesByAdvisory(long advisoryId);
 
     @SqlQuery(/* language=InjectedFreeMarker */ """
             <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->

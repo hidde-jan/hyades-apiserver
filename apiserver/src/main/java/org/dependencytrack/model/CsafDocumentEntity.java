@@ -58,7 +58,7 @@ public class CsafDocumentEntity implements Serializable {
     @JsonDeserialize(using = TrimmedStringDeserializer.class)
     private String url;
 
-    @Persistent(defaultFetchGroup = "false")
+    @Persistent
     @Column(name = "CONTENT", jdbcType = "CLOB")
     private String content;
 
