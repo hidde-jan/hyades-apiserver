@@ -72,6 +72,8 @@ RUN mkdir -p ${APP_DIR} ${DATA_DIR} \
     && chmod -R g=u ${DATA_DIR} ${APP_DIR} \
     && apk add --no-cache tzdata
 
+RUN apk add --no-cache gcompat libstdc++
+
 COPY --from=jre-build /work/jre ${JAVA_HOME}
 COPY ./target/dependency-track-apiserver.jar ./src/main/docker/logback-json.xml ${APP_DIR}/
 
