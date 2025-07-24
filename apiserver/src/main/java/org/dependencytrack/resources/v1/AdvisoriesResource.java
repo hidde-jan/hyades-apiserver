@@ -112,7 +112,8 @@ public class AdvisoriesResource extends AbstractApiResource {
 
             List<AdvisoryDao.AdvisoriesPortfolioRow> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
                     handle.attach(AdvisoryDao.class).getAllAdvisories());
-            final long totalCount = advisoryRows.size();
+            final long totalCount = withJdbiHandle(getAlpineRequest(), handle ->
+                    handle.attach(AdvisoryDao.class).getAllAdvisoriesTotal());
 
 //                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
 //                findings = mapComponentLatestVersion(findings);

@@ -2,6 +2,7 @@ package org.dependencytrack.persistence.jdbi;
 
 import org.dependencytrack.model.CsafDocumentEntity;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
+import org.jdbi.v3.sqlobject.customizer.AllowUnusedBindings;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 
@@ -159,6 +160,14 @@ public interface AdvisoryDao {
             """)
     @RegisterConstructorMapper(AdvisoryDao.AdvisoriesPortfolioRow.class)
     List<AdvisoriesPortfolioRow> getAllAdvisories();
+
+    // Note that the parameters aren't actually used!
+    @AllowUnusedBindings
+    @SqlQuery(/* language=InjectedFreeMarker */ """            
+            SELECT COUNT(DISTINCT ("ID", "NAME", "URL")) as "totalCount"
+            FROM "CSAFDOCUMENTENTITY"
+            """)
+    long getAllAdvisoriesTotal();
 
 
     record ProjectAdvisoryFinding(
