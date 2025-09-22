@@ -20,6 +20,7 @@ package org.dependencytrack.model;
 
 import alpine.common.validation.RegexSequence;
 import alpine.server.json.TrimmedStringDeserializer;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.NotBlank;
@@ -175,6 +176,7 @@ public class CsafDocumentEntity implements Serializable {
         this.lastFetched = lastFetched;
     }
 
+    @JsonIgnore
     public void setLastFetched(java.sql.Timestamp lastFetched) {
         setLastFetched(lastFetched.toInstant());
     }
