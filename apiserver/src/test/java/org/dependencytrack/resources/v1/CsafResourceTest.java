@@ -60,7 +60,7 @@ public class CsafResourceTest extends ResourceTest {
 
         Response response = jersey.target(V1_CSAF).path("/aggregators/").request().header(X_API_KEY, apiKey)
                 .put(Entity.entity(aggregator, MediaType.APPLICATION_JSON));
-        Assert.assertEquals(200, response.getStatus());
+        Assert.assertEquals(201, response.getStatus());
 
 
         response = jersey.target(V1_CSAF).path("/aggregators/").request().header(X_API_KEY, apiKey).get(Response.class);
