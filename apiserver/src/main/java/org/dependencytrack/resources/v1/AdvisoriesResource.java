@@ -19,6 +19,7 @@
 package org.dependencytrack.resources.v1;
 
 import alpine.common.logging.Logger;
+import alpine.persistence.PaginatedResult;
 import alpine.server.auth.PermissionRequired;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -52,6 +53,7 @@ import org.dependencytrack.resources.AbstractApiResource;
 import org.dependencytrack.resources.v1.openapi.PaginatedApi;
 import org.dependencytrack.resources.v1.problems.ProblemDetails;
 
+import javax.jdo.JDOObjectNotFoundException;
 import java.util.List;
 
 import static org.dependencytrack.persistence.jdbi.JdbiFactory.withJdbiHandle;
@@ -96,29 +98,10 @@ public class AdvisoriesResource extends AbstractApiResource {
     })
     @PaginatedApi
     @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
-    public Response getAllAdvisories() {
+    public Response getAdvisories() {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
-
-
-            List<AdvisoryDao.AdvisoriesPortfolioRow> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
-                    handle.attach(AdvisoryDao.class).getAllAdvisories());
-            final long totalCount = advisoryRows.size();
-
-//                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
-//                findings = mapComponentLatestVersion(findings);
-//                if (acceptHeader != null && acceptHeader.contains(MEDIA_TYPE_SARIF_JSON)) {
-//                    try {
-//                        return Response.ok(generateSARIF(findings), MEDIA_TYPE_SARIF_JSON)
-//                                .header("content-disposition", "attachment; filename=\"findings-" + uuid + ".sarif\"")
-//                                .build();
-//                    } catch (IOException ioException) {
-//                        LOGGER.error(ioException.getMessage(), ioException);
-//                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while generating SARIF file").build();
-//                    }
-//                }
-
-            return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
-
+            final PaginatedResult result = qm.getAdvisories();
+            return Response.ok(result.getObjects()).header(TOTAL_COUNT_HEADER, result.getTotal()).build();
         }
     }
 
@@ -132,9 +115,12 @@ public class AdvisoriesResource extends AbstractApiResource {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_ANALYSIS_READ)
-    public Response getAdvisoryById(@Parameter(description = "The advisoryId of the CSAF document to view", schema = @Schema(type = "string", format = "long"), required = true) @PathParam("advisoryId") String advisoryId) {
-        try (QueryManager qm = new QueryManager()) {
-            final var advisoryEntity = qm.getObjectById(CsafDocumentEntity.class, advisoryId);
+    public Response getAdvisoryById(@Parameter(description = "The advisoryId of the CSAF document to view", schema = @Schema(type = "integer"), required = true) @PathParam("advisoryId") long advisoryId) {
+        try (QueryManager qm = new QueryManager(getAlpineRequest())) {
+            final CsafDocumentEntity advisoryEntity = qm.getObjectById(CsafDocumentEntity.class, advisoryId);
+            if (advisoryEntity == null) {
+                return Response.status(Response.Status.NOT_FOUND).entity("The requested CSAF document could not be found.").build();
+            }
 
             if (advisoryEntity == null) {
                 return Response.status(Response.Status.NOT_FOUND)
@@ -157,6 +143,8 @@ public class AdvisoriesResource extends AbstractApiResource {
                         vulnerabilities
                 )).build();
             }
+        } catch (JDOObjectNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity("The requested CSAF document could not be found.").build();
         }
     }
 
@@ -198,25 +186,8 @@ public class AdvisoriesResource extends AbstractApiResource {
             final Project project = qm.getObjectByUuid(Project.class, uuid);
             if (project != null) {
                 requireAccess(qm, project);
-
-                List<AdvisoryDao.AdvisoryRow> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
-                        handle.attach(AdvisoryDao.class).getAdvisoriesByProject(project.getId(), suppressed));
-                final long totalCount = advisoryRows.size();
-
-//                List<Finding> findings = findingRows.stream().map(Finding::new).toList();
-//                findings = mapComponentLatestVersion(findings);
-//                if (acceptHeader != null && acceptHeader.contains(MEDIA_TYPE_SARIF_JSON)) {
-//                    try {
-//                        return Response.ok(generateSARIF(findings), MEDIA_TYPE_SARIF_JSON)
-//                                .header("content-disposition", "attachment; filename=\"findings-" + uuid + ".sarif\"")
-//                                .build();
-//                    } catch (IOException ioException) {
-//                        LOGGER.error(ioException.getMessage(), ioException);
-//                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while generating SARIF file").build();
-//                    }
-//                }
-
-                return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
+                final PaginatedResult result = qm.getAdvisoriesByProject(project.getId(), suppressed);
+                return Response.ok(result.getObjects()).header(TOTAL_COUNT_HEADER, result.getTotal()).build();
             } else {
                 return Response.status(Response.Status.NOT_FOUND).entity("The project could not be found.").build();
             }
@@ -224,7 +195,7 @@ public class AdvisoriesResource extends AbstractApiResource {
     }
 
     @GET
-    @Path("/project/{projectId}/advisory/{advisoryId}")
+    @Path("/project/{uuid}/advisory/{advisoryId}")
     @Produces({MediaType.APPLICATION_JSON})
     @Operation(
             summary = "Returns a list of findings associated to project x advisory",
@@ -247,27 +218,20 @@ public class AdvisoriesResource extends AbstractApiResource {
     })
     @PaginatedApi
     @PermissionRequired(Permissions.Constants.VIEW_VULNERABILITY)
-    public Response getFindingsByProjectAdvisory(@Parameter(description = "The ID of the project", schema = @Schema(type = "string"), required = true)
-                                           @PathParam("projectId") long projectId,
-                                           @Parameter(description = "The advisoryId", schema = @Schema(type="string"), required = true)
-                                           @PathParam("advisoryId") long advisoryId,
-                                           @HeaderParam("accept") String acceptHeader) {
+    public Response getFindingsByProjectAdvisory(@Parameter(description = "The UUID of the project", schema = @Schema(type = "string", format = "uuid"), required = true)
+                                                 @PathParam("uuid") @ValidUuid String uuid,
+                                                 @Parameter(description = "The advisoryId", schema = @Schema(type = "string"), required = true)
+                                                 @PathParam("advisoryId") long advisoryId,
+                                                 @HeaderParam("accept") String acceptHeader) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
-//            final Project project = qm.getObjectByUuid(Project.class, uuid);
-//            if (project != null) {
-//                requireAccess(qm, project);
-
-            LOGGER.info("Querying for "+projectId+" :: "+advisoryId);
-                List<AdvisoryDao.ProjectAdvisoryFinding> advisoryRows = withJdbiHandle(getAlpineRequest(), handle ->
-                        handle.attach(AdvisoryDao.class).getFindingsByProjectAdvisory(projectId, advisoryId));
-                final long totalCount = advisoryRows.size();
-                LOGGER.info("retrieved size "+totalCount);
-
-                return Response.ok(advisoryRows.stream().toList()).header(TOTAL_COUNT_HEADER, totalCount).build();
+            final Project project = qm.getObjectByUuid(Project.class, uuid);
+            if (project != null) {
+                requireAccess(qm, project);
+                final PaginatedResult result = qm.getFindingsByProjectAdvisory(project.getId(), advisoryId);
+                return Response.ok(result.getObjects()).header(TOTAL_COUNT_HEADER, result.getTotal()).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).entity("The project could not be found.").build();
             }
-//        else {
-//                return Response.status(Response.Status.NOT_FOUND).entity("The project could not be found.").build();
-//            }
-//        }
+        }
     }
 }

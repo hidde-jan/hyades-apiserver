@@ -49,6 +49,7 @@ import static org.dependencytrack.PersistenceCapableTest.truncateTables;
 public abstract class ResourceTest {
 
     protected final String V1_ACL = "/v1/acl";
+    protected final String V1_ADVISORIES = "/v1/advisories";
     protected final String V1_ANALYSIS = "/v1/analysis";
     protected final String V1_BADGE = "/v1/badge";
     protected final String V1_BOM = "/v1/bom";

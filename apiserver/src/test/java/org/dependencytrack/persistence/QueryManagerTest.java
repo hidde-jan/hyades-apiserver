@@ -32,6 +32,7 @@ import org.dependencytrack.model.Project;
 import org.dependencytrack.model.Role;
 
 import org.junit.Test;
+import org.dependencytrack.model.CsafDocumentEntity;
 import org.junit.runner.RunWith;
 
 import java.util.Collections;
@@ -249,6 +250,29 @@ public class QueryManagerTest extends PersistenceCapableTest {
             assertThat(entry.getPermissionNames(qm.getEffectivePermissions(entry.user(), entry.project())))
                     .contains(Permissions.POLICY_VIOLATION_ANALYSIS.name());
         }
+    }
+
+    @Test
+    public void testGetAdvisories() {
+        final var adv1 = new CsafDocumentEntity();
+        adv1.setName("CSAF-1");
+        adv1.setPublisherNamespace("Foo");
+        adv1.setTrackingID("Foo-123");
+        adv1.setTrackingVersion("1.0.0");
+        adv1.setUrl("https://example.com/csaf-1.json");
+        qm.persist(adv1);
+
+        final var adv2 = new CsafDocumentEntity();
+        adv2.setName("CSAF-2");
+        adv2.setPublisherNamespace("Bar");
+        adv2.setTrackingID("Bar-456");
+        adv2.setTrackingVersion("1.0.1");
+        adv2.setUrl("https://example.com/csaf-2.json");
+        qm.persist(adv2);
+
+        final var result = qm.getAdvisories();
+        assertThat(result.getTotal()).isEqualTo(2);
+        assertThat(result.getList(org.dependencytrack.persistence.jdbi.AdvisoryDao.AdvisoriesPortfolioRow.class)).hasSize(2);
     }
 
 }

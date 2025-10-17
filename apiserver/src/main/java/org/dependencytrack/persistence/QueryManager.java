@@ -55,6 +55,7 @@ import org.dependencytrack.model.ComponentOccurrence;
 import org.dependencytrack.model.ComponentProperty;
 import org.dependencytrack.model.ConfigPropertyConstants;
 import org.dependencytrack.model.CsafDocumentEntity;
+import org.dependencytrack.persistence.jdbi.AdvisoryDao;
 import org.dependencytrack.model.CsafSourceEntity;
 import org.dependencytrack.model.Epss;
 import org.dependencytrack.model.FindingAttribution;
@@ -155,6 +156,7 @@ public class QueryManager extends AlpineQueryManager {
     private TagQueryManager tagQueryManager;
     private EpssQueryManager epssQueryManager;
     private CsafQueryManager csafQueryManager;
+    private AdvisoriesQueryManager advisoriesQueryManager;
 
     /**
      * Default constructor.
@@ -421,6 +423,18 @@ public class QueryManager extends AlpineQueryManager {
             csafQueryManager = (request == null) ? new CsafQueryManager(getPersistenceManager()) : new CsafQueryManager(getPersistenceManager(), request);
         }
         return csafQueryManager;
+    }
+
+    /**
+     * Lazy instantiation of AdvisoriesQueryManager.
+     *
+     * @return a AdvisoriesQueryManager object
+     */
+    private AdvisoriesQueryManager getAdvisoriesQueryManager() {
+        if (advisoriesQueryManager == null) {
+            advisoriesQueryManager = (request == null) ? new AdvisoriesQueryManager(getPersistenceManager()) : new AdvisoriesQueryManager(getPersistenceManager(), request);
+        }
+        return advisoriesQueryManager;
     }
 
     /**
@@ -1054,6 +1068,22 @@ public class QueryManager extends AlpineQueryManager {
 
     public void synchronizeVulnerabilityMetrics(List<VulnerabilityMetrics> metrics) {
         getMetricsQueryManager().synchronizeVulnerabilityMetrics(metrics);
+    }
+
+    public PaginatedResult getAdvisories() {
+        return getAdvisoriesQueryManager().getAdvisories();
+    }
+
+    public AdvisoryDao.AdvisoryResult getAdvisoryById(long advisoryId) {
+        return getAdvisoriesQueryManager().getAdvisoryById(advisoryId);
+    }
+
+    public PaginatedResult getAdvisoriesByProject(long projectId, boolean suppressed) {
+        return getAdvisoriesQueryManager().getAdvisoriesByProject(projectId, suppressed);
+    }
+
+    public PaginatedResult getFindingsByProjectAdvisory(long projectId, long advisoryId) {
+        return getAdvisoriesQueryManager().getFindingsByProjectAdvisory(projectId, advisoryId);
     }
 
     public PaginatedResult getCsafSources(boolean isAggregator, boolean isDiscovery) {
