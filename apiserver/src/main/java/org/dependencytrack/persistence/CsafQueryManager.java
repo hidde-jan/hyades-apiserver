@@ -205,6 +205,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
 
     @Override
     public PaginatedResult searchCsafDocuments(String searchText, int pageSize, int pageNumber, String sortName, String sortOrder) {
+        searchText = (searchText == null ? "" : searchText);
         String totalSql = "SELECT COUNT(*) FROM public.\"CSAFDOCUMENTENTITY\" ";
         ArrayList<Object> totalQueryParams = new ArrayList<Object>();
         if (!searchText.isBlank()) {
@@ -224,6 +225,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
             docSql.append("WHERE searchvector @@ websearch_to_tsquery(?) ");
             docParams.add(searchText);
         }
+
         if (!sortName.isBlank() && ALLOWED_SORT_COLUMNS.containsKey(sortName) && !sortOrder.isBlank() && ALLOWED_SORT_ORDERS.containsKey(sortOrder)) {
             docSql.append("ORDER BY ");
             docSql.append(ALLOWED_SORT_COLUMNS.get(sortName));
@@ -233,6 +235,7 @@ public class CsafQueryManager extends QueryManager implements IQueryManager {
         } else {
             docSql.append("ORDER BY \"ID\" ASC ");
         }
+
         docSql.append("LIMIT ? OFFSET ? ");
         long offset = (long) (pageNumber - 1) * pageSize;
         docParams.add(pageSize);

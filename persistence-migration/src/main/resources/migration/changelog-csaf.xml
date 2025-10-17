@@ -105,7 +105,7 @@
                 constraintName="VULNERABILITY_FK"/>
     </changeSet>
     <changeSet id="csaf-7" author="FhG">
-        <addUniqueConstraint columnNames="URL" constraintName="URL_IDX"
+        <addUniqueConstraint columnNames="URL" constraintName="CSAFSOURCE_URL_UQ"
                              tableName="CSAFSOURCEENTITY"/>
     </changeSet>
 </databaseChangeLog>

@@ -34,7 +34,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -79,7 +78,7 @@ public class CsafResource extends AlpineResource {
     @Path("/trigger-mirror/")
     @Operation(summary = "Triggers the CSAF mirror task manually", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_UPDATE</strong></p>")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "The CSAF mirror task has been triggered"),
+            @ApiResponse(responseCode = "202", description = "The CSAF mirror task has been triggered"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE)
@@ -87,7 +86,7 @@ public class CsafResource extends AlpineResource {
         var mirror = new CsafMirrorTask();
         mirror.inform(new CsafMirrorEvent());
 
-        return null;
+        return Response.accepted().build();
     }
 
     @GET
@@ -145,22 +144,10 @@ public class CsafResource extends AlpineResource {
     })
     @PermissionRequired(Permissions.Constants.VULNERABILITY_MANAGEMENT_UPDATE) // TODO create update only permission
     public Response updateCsafAggregator(CsafSourceEntity jsonEntity) {
-        final Validator validator = super.getValidator();
-        /*
-         * final Validator validator = super.getValidator(); // TODO validate
-         * failOnValidationError(validator.validateProperty(jsonRepository,
-         * "identifier"),
-         * validator.validateProperty(jsonRepository, "url")
-         * );
-         * //TODO: When the UI changes are updated then this should be a validation
-         * check as part of line 201
-         * if (jsonRepository.isAuthenticationRequired() == null) {
-         * jsonRepository.setAuthenticationRequired(false);
-         * }
-         */
         if(!CsafUtil.validateUrlOrDomain(jsonEntity.getUrl())) {
             return Response.status(Response.Status.BAD_REQUEST).entity("Invalid domain or url").build();
         }
+
         try (QueryManager qm = new QueryManager()) {
             jsonEntity.setAggregator(true);
             jsonEntity.setDomain(CsafUtil.validateDomain(jsonEntity.getUrl()));
@@ -225,7 +212,7 @@ public class CsafResource extends AlpineResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Creates a new CSAF provider", description = "<p>Requires permission <strong>VULNERABILITY_MANAGEMENT_CREATE</strong></p>")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "The created CSAF provider", content = @Content(schema = @Schema(implementation = Repository.class))),
+            @ApiResponse(responseCode = "201", description = "The created CSAF provider", content = @Content(schema = @Schema(implementation = CsafSourceEntity.class))),
             @ApiResponse(responseCode = "400", description = "Invalid domain or url"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "409", description = "An provider with the specified identifier already exists")
@@ -305,7 +292,7 @@ public class CsafResource extends AlpineResource {
     public Response getCsafDocuments(@QueryParam("searchText") String searchText, @QueryParam("pageSize") int pageSize, @QueryParam("pageNumber") int pageNumber, @QueryParam("sortName") String sortName, @QueryParam("sortOrder") String sortOrder) {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             var results = qm.searchCsafDocuments(searchText, pageSize, pageNumber, sortName, sortOrder);
-            return Response.ok(results).build();
+            return Response.ok(results.getObjects()).header(TOTAL_COUNT_HEADER, results.getTotal()).build();
         }
     }
 

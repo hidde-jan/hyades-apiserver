@@ -122,18 +122,27 @@ public class AdvisoriesResource extends AbstractApiResource {
                 return Response.status(Response.Status.NOT_FOUND).entity("The requested CSAF document could not be found.").build();
             }
 
-            final List<AdvisoryDao.ProjectRow> affectedProjects = withJdbiHandle(getAlpineRequest(), handle ->
-                    handle.attach(AdvisoryDao.class).getProjectsByAdvisory(advisoryEntity.getId()));
+            if (advisoryEntity == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("The requested CSAF document could not be found.")
+                        .build();
+            } else {
+                List<AdvisoryDao.ProjectRow> affectedProjects = withJdbiHandle(getAlpineRequest(), handle ->
+                        handle.attach(AdvisoryDao.class).getProjectsByAdvisory(advisoryEntity.getId()));
 
-            final List<AdvisoryDao.VulnerabilityRow> vulnerabilities = withJdbiHandle(getAlpineRequest(), handle ->
-                    handle.attach(AdvisoryDao.class).getVulnerabilitiesByAdvisory(advisoryEntity.getId()));
+                List<AdvisoryDao.VulnerabilityRow> vulnerabilities = withJdbiHandle(getAlpineRequest(), handle ->
+                        handle.attach(AdvisoryDao.class).getVulnerabilitiesByAdvisory(advisoryEntity.getId()));
 
-            final var result = new AdvisoryDao.AdvisoryResult(
-                    advisoryEntity,
-                    affectedProjects,
-                    vulnerabilities
-            );
-            return Response.ok(result).build();
+                long numAffectedComponents = withJdbiHandle(getAlpineRequest(), handle ->
+                        handle.attach(AdvisoryDao.class).getAmountFindingsTotal(advisoryEntity.getId()));
+
+                return Response.ok(new AdvisoryDao.AdvisoryResult(
+                        advisoryEntity,
+                        affectedProjects,
+                        numAffectedComponents,
+                        vulnerabilities
+                )).build();
+            }
         } catch (JDOObjectNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity("The requested CSAF document could not be found.").build();
         }

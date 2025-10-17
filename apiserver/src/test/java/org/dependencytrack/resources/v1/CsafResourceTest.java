@@ -45,10 +45,8 @@ public class CsafResourceTest extends ResourceTest {
     @Override
     public void before() throws Exception {
         super.before();
-//        final var generator = new DefaultObjectGenerator();
-//        generator.loadDefaultRepositories();
-    }
 
+    }
 
     @Test
     public void createCsafSourceTest() throws Exception {
@@ -57,25 +55,14 @@ public class CsafResourceTest extends ResourceTest {
         aggregator.setUrl("example.com");
         aggregator.setEnabled(true);
 
-
         Response response = jersey.target(V1_CSAF).path("/aggregators/").request().header(X_API_KEY, apiKey)
                 .put(Entity.entity(aggregator, MediaType.APPLICATION_JSON));
-        Assert.assertEquals(201, response.getStatus());
-
+        Assert.assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
 
         response = jersey.target(V1_CSAF).path("/aggregators/").request().header(X_API_KEY, apiKey).get(Response.class);
-        Assert.assertEquals(200, response.getStatus(), 0);
-        //Assert.assertEquals(String.valueOf(18), response.getHeaderString(TOTAL_COUNT_HEADER));
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(), 0);
+
         JsonArray json = parseJsonArray(response);
         Assert.assertNotNull(json);
-        // TODO check fields
-        /*Assert.assertEquals(18, json.size());
-        Assert.assertEquals("MAVEN", json.getJsonObject(13).getString("type"));
-        Assert.assertEquals("test", json.getJsonObject(13).getString("identifier"));
-        Assert.assertEquals("www.foobar.com", json.getJsonObject(13).getString("url"));
-        Assert.assertTrue(json.getJsonObject(13).getInt("resolutionOrder") > 0);
-        Assert.assertTrue(json.getJsonObject(13).getBoolean("authenticationRequired"));
-        Assert.assertEquals("testuser", json.getJsonObject(13).getString("username"));
-        Assert.assertTrue(json.getJsonObject(13).getBoolean("enabled"));*/
     }
 }

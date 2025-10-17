@@ -86,6 +86,7 @@ public interface AdvisoryDao {
     record AdvisoryResult(
             CsafDocumentEntity entity,
             List<ProjectRow> affectedProjects,
+            long numAffectedComponents,
             List<AdvisoryDao.VulnerabilityRow> vulnerabilities
     ) {
     }
@@ -217,7 +218,7 @@ public interface AdvisoryDao {
             <#-- @ftlvariable name="apiOffsetLimitClause" type="String" -->
 
             SELECT "CSAFDOCUMENTENTITY"."NAME" as "name",
-            COUNT("PROJECT_ID") AS "affectedComponents",
+            COUNT(DISTINCT "FINDINGATTRIBUTION"."COMPONENT_ID") AS "affectedComponents",
             COUNT(DISTINCT "PROJECT_ID") AS "affectedProjects",
             "URL" AS "url",
             "CSAFDOCUMENTENTITY"."ID" AS "documentId",
