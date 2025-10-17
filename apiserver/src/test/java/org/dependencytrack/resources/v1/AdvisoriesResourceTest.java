@@ -103,6 +103,39 @@ public class AdvisoriesResourceTest extends ResourceTest {
     }
 
     @Test
+    public void getAdvisoriesOrderOnNameTest() {
+        new SampleData();
+        Response response = jersey.target(V1_ADVISORIES)
+                .queryParam(ORDER_BY, "name")
+                .queryParam(SORT, SORT_DESC)
+                .request()
+                .header(X_API_KEY, apiKey)
+                .get(Response.class);
+        Assert.assertEquals(200, response.getStatus(), 0);
+        Assert.assertEquals("2", response.getHeaderString(TOTAL_COUNT_HEADER));
+        JsonArray json = parseJsonArray(response);
+        Assert.assertNotNull(json);
+        Assert.assertEquals(2, json.size());
+        Assert.assertEquals("CSAF-2", json.getJsonObject(0).getString("name"));
+    }
+
+    @Test
+    public void getAdvisoriesFilterOnNameTest() {
+        new SampleData();
+        Response response = jersey.target(V1_ADVISORIES)
+                .queryParam(FILTER, "CSAF-2")
+                .request()
+                .header(X_API_KEY, apiKey)
+                .get(Response.class);
+        Assert.assertEquals(200, response.getStatus(), 0);
+        Assert.assertEquals("1", response.getHeaderString(TOTAL_COUNT_HEADER));
+        JsonArray json = parseJsonArray(response);
+        Assert.assertNotNull(json);
+        Assert.assertEquals(1, json.size());
+        Assert.assertEquals("CSAF-2", json.getJsonObject(0).getString("name"));
+    }
+
+    @Test
     public void getAdvisoryByIdTest() {
         SampleData sampleData = new SampleData();
         Response response = jersey.target(V1_ADVISORIES + "/" + sampleData.adv1.getId()).request()
